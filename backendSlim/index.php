@@ -1,17 +1,6 @@
 <?php
-/**
- * Step 1: Require the Slim Framework
- *
- * If you are not using Composer, you need to require the
- * Slim Framework and register its PSR-0 autoloader.
- */
 require 'Slim/Slim.php';
-
 \Slim\Slim::registerAutoloader();
-
-/**
- * Step 2: Instantiate a Slim application
- */
 $app = new \Slim\Slim(array(
 	'debug' => true,
   'MODE'  => 'development'
@@ -20,11 +9,9 @@ $app = new \Slim\Slim(array(
 $request  = $app -> request();
 $response = $app -> response();
 
-// $response -> headers -> set('Content-Type', 'application/json');
 
 $response -> headers -> set('Access-Control-Allow-Origin', '*');
 $response -> headers -> set('Access-Control-Allow-Methods', "POST, GET, OPTIONS, PATCH, PUT, DELETE");
-// $response -> headers -> set('Access-Control-Allow-Headers', 'accept, origin, content-type');
 $response -> headers -> set('Access-Control-Allow-Headers', 'X-PINGOTHER');
 $response -> headers -> set('Access-Control-Max-Age', '1728000');
 $response -> headers -> set('Access-Control-Allow-Headers', 'Authorization');
@@ -43,42 +30,50 @@ $db -> setAttribute(PDO::ATTR_ERRMODE,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//login
+/**
+ * Url de inicio del backend
+ */
 $app->get('/', function() {
             echo "Pagina de gestión API REST de Carrea de Observación UAM.";
         });
 
 ////////////////////////////////////////////////////////////////////////////////
-// Business logic API
-//get login con los datos ocultos
+
+// API REST específica de la aplicación
+
+/**
+ * Validar los datos el usuario, verificar que el usuario exista
+ */
 $app->post('/users/email', 'getLogin');
+
+/**
+ * Validar la contraseña proporcionada por el usuario
+ */
 $app->post('/users/passwd', 'getLogin2');
 
-/*filtre carreras en las que el usuario se encuentra inscrito y la carrera se encuentra activa
- *@param email  el email del usuario
+/**
+ * Filtrar carreras en las que el usuario se encuentra inscrito y la carrera se encuentra activa
  */
 $app->post('/inscriptions/user', 'getCircuitInscripted');
 
 
-/*
+/**
  * Mostrar las pistas activas de usuario en la carrera especificada
  */
 $app->post('/nodes/showhint', 'getUserHints');
 
-/*
+/**
  * Mostrar las preguntas activas de usuario en la carrera especificada
  */
 $app->post('/nodesdiscovered/showquestion', 'getUserQuestions');
 
 
-/*
+/**
  * Filtrar todos los nodos que corresponden a la carrera que aùn no han sido visitados por el usuario
- * @param  user_id   el id del usuario
- * @param  circuit_id  el id de la carrera
  */
  $app->post('/nodesdiscovered/tovisit', 'getNotVisitedNodes');
 
- /*
+ /**
   * Filtrar todos los nodos que corresponden a la carrera que han descubiertos
   * @param  user_id   el id del usuario
   * @param  circuit_id  el id de la carrera
@@ -93,28 +88,19 @@ $app->post('/nodesdiscovered/showquestion', 'getUserQuestions');
 
 
 
-/*
+/**
  * Valida el valor de respuesta proporcionado por el usuario
- * @param question_id id de la pregunta
- * @param response respuesta
  */
  $app->post('/questions/validate', 'validateResponse');
 
- /*
+ /**
  * obtener el id del node descubierto del cual se tienen unos parámetros
- * @param question_id id de la pregunta
- * @param user_id id del usuario
- * @param circuit_id id de la carrera
- * @return json
  */
  $app->post('/nodesdiscovered/getid', 'getNodediscoveredId');
 
 
  /**
  * Validar el código QR que corresponda al código del nodo
- * @param id id del nodo
- * @param code còdigo QR
- * @return mixed
  */
 $app->post('/nodes/validate', 'validateNodeCode');
 
@@ -122,46 +108,42 @@ $app->post('/nodes/validate', 'validateNodeCode');
 * Obtener el id de nodediscovered a partir del user_id y node_id
 * @param integer $user_id
 * @param integer $node_id
-* @return mixed
 */
 $app->get('/nodesdiscovered/:user_id/:node_id', 'getNodeDiscoveredByUserNode');
 
 
 /**
-* GET /nodesDiscovered/score/{user_id}/{circuit_id}
+* Obtener la cantidad de nodos en estado 2 de un usuario en una carrera específica
 * @param integer $user_id
 * @param integer $circuit_id
-* @return mixed
 */
 $app->get('/nodesdiscovered/score/:user_id/:circuit_id', 'getPuntuacion');
 
 
 /**
-* GET /circuits/score/{circuit_id}
+* Obtener el total de nodos que tiene una carrera
 * @param integer $circuit_id
 * @return mixed
 */
 $app->get('/circuits/score/:circuit_id', 'getTotalNodes');
 
 /**
-* GET /circuits/totalScore
+* Obtener la puntuación general de una carrera
 * @param integer $circuit_id
-* @return mixed
 */
 $app->get('/circuits/totalscore/:circuit_id', 'getTotalScore');
 
 
 /**
-* GET /users/locationvisited/{user_id}
+* Obtener las coordenadas de los nodos visitados en estado 2 de un usuario específico
 * @param integer $user_id
 * @param integer $circuit_id
-* @return mixed
 */
 $app->get('/users/locationvisited/:user_id/:circuit_id', 'getLocationVisited');
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Nodes
+//API estándar de nodos
 $app->get('/nodes', 'getNodes');
 $app->get('/nodes/:id', 'getNode');
 $app->post('/nodes', 'addNode');
@@ -169,7 +151,7 @@ $app->put('/nodes/:id', 'updateNode');
 $app->delete('/nodes/:id', 'deleteNode');
 
 ////////////////////////////////////////////////////////////////////////////////
-// Circuits
+//API estándar de carreras
 $app->get('/circuits', 'getCircuits');
 $app->get('/circuits/:id', 'getCircuit');
 $app->post('/circuits', 'addCircuit');
@@ -177,7 +159,7 @@ $app->put('/circuits/:id', 'updateCircuit');
 $app->delete('/circuits/:id', 'deleteCircuit');
 
 ////////////////////////////////////////////////////////////////////////////////
-// Users
+//API estándar de usuarios
 $app->get('/users', 'getUsers');
 $app->get('/users/:email', 'getUser');
 $app->post('/users', 'addUser');
@@ -185,7 +167,7 @@ $app->put('/users/:id', 'updateUser');
 $app->delete('/users/:id', 'deleteUser');
 
 ////////////////////////////////////////////////////////////////////////////////
-// Questions
+//API estándar de preguntas
 $app->get('/questions', 'getQuestions');
 $app->get('/questions/:id', 'getQuestion');
 $app->post('/questions', 'addQuestion');
@@ -193,7 +175,7 @@ $app->put('/questions/:id', 'updateQuestion');
 $app->delete('/questions/:id', 'deleteQuestion');
 
 ////////////////////////////////////////////////////////////////////////////////
-// Inscriptions
+//API estándar de inscripciones
 $app->get('/inscriptions', 'getInscriptions');
 $app->get('/inscriptions/:id', 'getInscription');
 $app->post('/inscriptions', 'addInscription');
@@ -201,7 +183,7 @@ $app->put('/inscriptions/:id', 'updateInscription');
 $app->delete('/inscriptions/:id', 'deleteInscription');
 
 ////////////////////////////////////////////////////////////////////////////////
-// NodesDiscovered
+//API estándar de nodos descubiertos
 $app->get('/nodesdiscovered', 'getNodesDiscovered');
 $app->get('/nodesdiscovered/:id', 'getNodeDiscovered');
 $app->post('/nodesdiscovered', 'addNodeDiscovered');
@@ -209,6 +191,7 @@ $app->put('/nodesdiscovered/:id', 'updateNodeDiscovered');
 $app->delete('/nodesdiscovered/:id', 'deleteNodeDiscovered');
 
 ////////////////////////////////////////////////////////////////////////////////
+// Implementación de la API específica para la aplicación
 
 /**
 * POST /users/email
@@ -217,7 +200,6 @@ $app->delete('/nodesdiscovered/:id', 'deleteNodeDiscovered');
 */
 function getLogin() {
  global $db, $request;
-	 //si status = 1 requiere un update antes de hacer el insert
 	 $user = json_decode($request->getBody());
  	 $sql = "SELECT email FROM user WHERE email=:email";
 	 try {
@@ -242,7 +224,6 @@ function getLogin() {
 */
  function getLogin2() {
 	global $db, $request;
-    //si status = 1 requiere un update antes de hacer el insert
     $user = json_decode($request->getBody());
 	$sql = "SELECT id FROM user WHERE email=:email AND password=MD5(:password)";
     try {
@@ -256,7 +237,6 @@ function getLogin() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 }
-
 //{"email":"jmmejia@autonoma.edu.co", "password":"123"}
 
 
@@ -269,9 +249,6 @@ function getLogin() {
 function getCircuitInscripted(){
  global $db, $request, $response;
  $inscription = json_decode($request->getBody());
-		 /*filtre carreras en las que el user se encuentra inscrito y la carrera se encuentra activa
-			*@param email  el email del user
-			*/
 		 $sql = "SELECT circuit.id, circuit.name FROM circuit INNER JOIN (SELECT circuit_id FROM inscription
 						 WHERE user_id=:user_id)AS a ON circuit.id=a.circuit_id WHERE circuit.status=1";
 		 try {
@@ -296,9 +273,6 @@ function getCircuitInscripted(){
 function getNotVisitedNodes(){
  global $db, $request, $response;
  $inscription = json_decode($request->getBody());
-		/*filtre carreras en las que el user se encuentra inscrito y la carrera se encuentra activa
-		 *@param email  el email del user
-		 */
 		$sql = "SELECT node.id FROM node WHERE node.id NOT IN (SELECT nodediscovered.node_id FROM nodediscovered
 						WHERE node.circuit_id= :circuit_id AND nodediscovered.user_id=:user_id) AND node.circuit_id=:circuit_id";
 		try {
@@ -323,14 +297,7 @@ function getNotVisitedNodes(){
 */
 function getVisitedNodes($user_id, $circuit_id){
  global $db, $request, $response;
- //$inscription = json_decode($request->getBody());
-		/*filtre carreras en las que el user se encuentra inscrito y la carrera se encuentra activa
-		 *@param email  el email del user
-
-		$sql = "SELECT n.id FROM node n INNER JOIN (SELECT d.node_id FROM nodediscovered d WHERE d.user_id=:user_id) AS l
-						ON n.id=l.node_id WHERE n.circuit_id=:circuit_id";
-*/
-		$sql = "SELECT n.id FROM node n INNER JOIN nodediscovered d ON n.id=d.node_id WHERE n.circuit_id=:circuit_id AND d.user_id=:user_id";
+ 		$sql = "SELECT n.id FROM node n INNER JOIN nodediscovered d ON n.id=d.node_id WHERE n.circuit_id=:circuit_id AND d.user_id=:user_id";
 		try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("user_id", $user_id);
@@ -398,7 +365,7 @@ function getUserQuestions(){
 
 /**
 * GET /questions/node/{id}
-* @param integer $id
+* @param integer $node_id
 * @return mixed
 */
 function getNodeQuestions($node_id){
@@ -416,11 +383,6 @@ function getNodeQuestions($node_id){
 }
 
 
-/*
- * Valida el valor de respuesta proporcionado por el usuario
- * @param question_id id de la pregunta
- * @param response respuesta
- */
 
 /**
 * POST /questions/validate
@@ -456,7 +418,6 @@ function validateResponse() {
 */
 function getNodediscoveredId() {
  global $db, $request;
-	 //si status = 1 requiere un update antes de hacer el insert
 	 $nodediscovered = json_decode($request->getBody());
  	 $sql = "SELECT nodediscovered.id, nodediscovered.node_id, nodediscovered.statusDate1, nodediscovered.statusDate2
 	  				FROM nodediscovered JOIN node ON nodediscovered.node_id=node.id
@@ -485,7 +446,6 @@ function getNodediscoveredId() {
 */
 function validateNodeCode() {
  global $db, $request;
-	 //si status = 1 requiere un update antes de hacer el insert
 	 $node = json_decode($request->getBody());
  	 $sql = "SELECT id FROM node WHERE id=:id AND code=:code";
 	 try {
@@ -499,7 +459,7 @@ function validateNodeCode() {
 			 echo '{"error":{"text":'. $e->getMessage() .'}}';
 	 }
 }
-//{"node_id": 2, "response":"jmmejia@autonoma.edu.co"}
+//{"node_id": 2, "code":"0.123456768"}
 
 
 /**
@@ -594,6 +554,7 @@ function getTotalScore($circuit_id){
 /**
 * GET /users/locationvisited/{user_id}
 * @param integer $user_id
+* @param integer $circuit_id
 * @return mixed
 */
 function getLocationVisited($user_id, $circuit_id){
@@ -614,6 +575,7 @@ function getLocationVisited($user_id, $circuit_id){
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//Implementación API básica de las entidades de la aplicación, GETALL
 
 /**
 * GET /nodes
@@ -713,6 +675,7 @@ function getNodesDiscovered(){
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//Implementación API básica de las entidades de la aplicación, GET específico
 
 /**
 * GET /nodes/{id}
@@ -768,7 +731,6 @@ function getNode($id){
 	        $stmt->bindParam("id", $id);
 	        $stmt->execute();
 	        $user = $stmt->fetchObject();
-
 	        echo json_encode($user);
 	    } catch(PDOException $e) {
 	        echo '{"error":{"text":'. $e->getMessage() .'}}';
@@ -833,8 +795,9 @@ function getQuestion($id){
 	 }
 
 
-	 ////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+//Implementación API básica de las entidades de la aplicación, POST (Crear)
 
 	 /**
 	 * POST /nodes
@@ -954,7 +917,6 @@ function addQuestion() {
 */
 function addInscription() {
 global $db, $request;
-	//si status = 1 requiere un update antes de hacer el insert
 	$body = $request->getBody();
 	$inscription = json_decode($body);
 	$sql = "INSERT INTO inscription (circuit_id, user_id) VALUES (:circuit_id, :user_id)";
@@ -1001,7 +963,7 @@ global $db, $request;
 //{"node_id":1, "user_id":1,"status": 0, "statusDate1":"2016-06-10 15:32:31"}
 
 ////////////////////////////////////////////////////////////////////////////////
-
+//Implementación API básica de las entidades de la aplicación, PUT (Actualizar)
 
 /**
 * PUT /nodes/{id}
@@ -1010,7 +972,6 @@ global $db, $request;
 */
 	 function updateNode($id) {
 	  global $db, $request;
-	 	 //si status = 1 requiere un update antes de hacer el insert
 		 $body = $request->getBody();
      $node = json_decode($body);
   	 $sql = "UPDATE node SET name= :name, description= :description, code= :code, latitude= :latitude, longitude= :longitude, hint= :hint, circuit_id= :circuit_id WHERE id= :id";
@@ -1121,7 +1082,6 @@ function updateQuestion($id) {
 */
 function updateInscription($id) {
 global $db, $request;
-	//si status = 1 requiere un update antes de hacer el insert
 	$body = $request->getBody();
 	$inscription = json_decode($body);
 	$sql = "UPDATE inscription SET circuit_id=:circuit_id, user_id=:user_id WHERE id=:id";
@@ -1149,7 +1109,6 @@ global $db, $request;
 */
 function updateNodeDiscovered($id) {
 global $db, $request;
-	//si status = 1 requiere un update antes de hacer el insert
 	$body = $request->getBody();
 	$nodeDiscovered = json_decode($body);
 $sql = "UPDATE nodeDiscovered SET node_id=:node_id, user_id=:user_id, status=:status, statusDate1=:statusDate1, statusDate2=:statusDate2, statusDate3=:statusDate3 WHERE id=:id";
@@ -1174,6 +1133,7 @@ $sql = "UPDATE nodeDiscovered SET node_id=:node_id, user_id=:user_id, status=:st
 
 
 ////////////////////////////////////////////////////////////////////////////////
+//Implementación API básica de las entidades de la aplicación, DELETE
 
 /**
 * DELETE /nodes/{id}
@@ -1288,9 +1248,6 @@ function deleteNodeDiscovered($id){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 $app->run();
 
