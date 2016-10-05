@@ -29,13 +29,14 @@ class QuestionController extends Controller
   * @param response respuesta
   * @return mixed
   */
-  public function validateResponse(Request $request) {
+  public function validateResponse(Request $data) {
+    $request=json_decode($data->getContent());
     return (DB::table('questions')
             ->select('id')
-            ->where('id', '=', $request['question_id'])
-            ->where('answer','=',$request['answer'])->get());
+            ->where('id', '=', $request->question_id)
+            ->where('answer','=',$request->answer)->get());
   }
-  
+
 //{"question_id": 1, "response":"WBEIMAR CANO RESTREPO"}
 
 
@@ -67,12 +68,13 @@ class QuestionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $data)
     {
+      $request=json_decode($data->getContent());
       $id = DB::table('questions')->insertGetId([
-      'question' => $request['question'],
-      'answer' => $request['answer'],
-      'node_id' => $request['node_id']
+      'question' => $request->question,
+      'answer' => $request->answer,
+      'node_id' => $request->node_id
       ]);
       return (DB::table('questions')->where('id', '=', $id)->get());
     }
@@ -86,11 +88,11 @@ class QuestionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $data, $id)
     {
-
+      $request=json_decode($data->getContent());
       DB::table('questions')->where('id', $id)->update(
-      ['question' => $request['question'], 'answer'=> $request['answer'],'node_id' => $request['node_id']]);
+      ['question' => $request->question, 'answer'=> $request->answer,'node_id' => $request->node_id]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests;
+use Carbon\Carbon;
 
 class InscriptionController extends Controller
 {
@@ -43,12 +44,13 @@ class InscriptionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $data)
     {
+      $request=json_decode($data->getContent());
       $id = DB::table('inscriptions')->insertGetId([
-      'circuit_id' => $request['circuit_id'],
-      'user_id' => $request['user_id'],
-      'inscription_date' => $request['inscription_date']
+      'circuit_id' => $request->circuit_id,
+      'user_id' => $request->user_id,
+      'inscription_date'=> Carbon::now() -> toDateTimeString()
       ]);
       return (DB::table('inscriptions')->where('id', '=', $id)->get());
     }
@@ -62,11 +64,11 @@ class InscriptionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $data, $id)
     {
-
+      $request=json_decode($data->getContent());
       DB::table('inscriptions')->where('id', $id)->update(
-      ['circuit_id' => $request['circuit_id'], 'user_id'=> $request['user_id'],'inscription_date' => $request['inscription_date']]);
+      ['circuit_id' => $request->circuit_id, 'user_id'=> $request->user_id,'inscription_date' => $request->inscription_date]);
     }
 
     /**

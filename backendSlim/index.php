@@ -65,20 +65,20 @@ $app->post('/nodes/showhint', 'getUserHints');
 /**
  * Mostrar las preguntas activas de usuario en la carrera especificada
  */
-$app->post('/nodesdiscovered/showquestion', 'getUserQuestions');
+$app->post('/discoveredNodes/showquestion', 'getUserQuestions');
 
 
 /**
  * Filtrar todos los nodos que corresponden a la carrera que aùn no han sido visitados por el usuario
  */
- $app->post('/nodesdiscovered/tovisit', 'getNotVisitedNodes');
+ $app->post('/discoveredNodes/tovisit', 'getNotVisitedNodes');
 
  /**
   * Filtrar todos los nodos que corresponden a la carrera que han descubiertos
   * @param  user_id   el id del usuario
   * @param  circuit_id  el id de la carrera
   */
-  $app->get('/nodesdiscovered/visited/:user_id/:circuit_id', 'getVisitedNodes');
+  $app->get('/discoveredNodes/visited/:user_id/:circuit_id', 'getVisitedNodes');
 
 	/*
 	 * Filtrar todos las preguntas de un nodo especìfico
@@ -96,7 +96,7 @@ $app->post('/nodesdiscovered/showquestion', 'getUserQuestions');
  /**
  * obtener el id del node descubierto del cual se tienen unos parámetros
  */
- $app->post('/nodesdiscovered/getid', 'getNodediscoveredId');
+ $app->post('/discoveredNodes/getid', 'getNodediscoveredId');
 
 
  /**
@@ -109,7 +109,7 @@ $app->post('/nodes/validate', 'validateNodeCode');
 * @param integer $user_id
 * @param integer $node_id
 */
-$app->get('/nodesdiscovered/:user_id/:node_id', 'getNodeDiscoveredByUserNode');
+$app->get('/discoveredNodes/:user_id/:node_id', 'getNodeDiscoveredByUserNode');
 
 
 /**
@@ -117,7 +117,7 @@ $app->get('/nodesdiscovered/:user_id/:node_id', 'getNodeDiscoveredByUserNode');
 * @param integer $user_id
 * @param integer $circuit_id
 */
-$app->get('/nodesdiscovered/score/:user_id/:circuit_id', 'getPuntuacion');
+$app->get('/discoveredNodes/score/:user_id/:circuit_id', 'getPuntuacion');
 
 
 /**
@@ -184,11 +184,11 @@ $app->delete('/inscriptions/:id', 'deleteInscription');
 
 ////////////////////////////////////////////////////////////////////////////////
 //API estándar de nodos descubiertos
-$app->get('/nodesdiscovered', 'getNodesDiscovered');
-$app->get('/nodesdiscovered/:id', 'getNodeDiscovered');
-$app->post('/nodesdiscovered', 'addNodeDiscovered');
-$app->put('/nodesdiscovered/:id', 'updateNodeDiscovered');
-$app->delete('/nodesdiscovered/:id', 'deleteNodeDiscovered');
+$app->get('/discoveredNodes', 'getNodesDiscovered');
+$app->get('/discoveredNodes/:id', 'getNodeDiscovered');
+$app->post('/discoveredNodes', 'addNodeDiscovered');
+$app->put('/discoveredNodes/:id', 'updateNodeDiscovered');
+$app->delete('/discoveredNodes/:id', 'deleteNodeDiscovered');
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementación de la API específica para la aplicación
@@ -201,7 +201,7 @@ $app->delete('/nodesdiscovered/:id', 'deleteNodeDiscovered');
 function getLogin() {
  global $db, $request;
 	 $user = json_decode($request->getBody());
- 	 $sql = "SELECT email FROM user WHERE email=:email";
+ 	 $sql = "SELECT email FROM users WHERE email=:email";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("email", $user->email);
@@ -225,7 +225,7 @@ function getLogin() {
  function getLogin2() {
 	global $db, $request;
     $user = json_decode($request->getBody());
-	$sql = "SELECT id FROM user WHERE email=:email AND password=MD5(:password)";
+	$sql = "SELECT id FROM users WHERE email=:email AND password=SHA1(:password)";
     try {
         $stmt = $db->prepare($sql);
         $stmt->bindParam("email", $user->email);
@@ -249,7 +249,7 @@ function getLogin() {
 function getCircuitInscripted(){
  global $db, $request, $response;
  $inscription = json_decode($request->getBody());
-		 $sql = "SELECT circuit.id, circuit.name FROM circuit INNER JOIN (SELECT circuit_id FROM inscription
+		 $sql = "SELECT circuit.id, circuit.name FROM circuits INNER JOIN (SELECT circuit_id FROM inscriptions
 						 WHERE user_id=:user_id)AS a ON circuit.id=a.circuit_id WHERE circuit.status=1";
 		 try {
 				$stmt = $db->prepare($sql);
@@ -273,7 +273,7 @@ function getCircuitInscripted(){
 function getNotVisitedNodes(){
  global $db, $request, $response;
  $inscription = json_decode($request->getBody());
-		$sql = "SELECT node.id FROM node WHERE node.id NOT IN (SELECT nodediscovered.node_id FROM nodediscovered
+		$sql = "SELECT node.id FROM nodes WHERE node.id NOT IN (SELECT nodediscovered.node_id FROM discoveredNodes
 						WHERE node.circuit_id= :circuit_id AND nodediscovered.user_id=:user_id) AND node.circuit_id=:circuit_id";
 		try {
 			 $stmt = $db->prepare($sql);
@@ -297,7 +297,7 @@ function getNotVisitedNodes(){
 */
 function getVisitedNodes($user_id, $circuit_id){
  global $db, $request, $response;
- 		$sql = "SELECT n.id FROM node n INNER JOIN nodediscovered d ON n.id=d.node_id WHERE n.circuit_id=:circuit_id AND d.user_id=:user_id";
+ 		$sql = "SELECT n.id FROM nodes n INNER JOIN discoveredNodes d ON n.id=d.node_id WHERE n.circuit_id=:circuit_id AND d.user_id=:user_id";
 		try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("user_id", $user_id);
@@ -321,7 +321,7 @@ function getVisitedNodes($user_id, $circuit_id){
 function getUserHints(){
 	global $db, $request;
 		 $hint = json_decode($request->getBody());
-		 $sql = "SELECT n.id, n.hint FROM node n JOIN (SELECT * FROM nodediscovered d WHERE d.user_id=:user_id AND d.status= 0) AS t
+		 $sql = "SELECT n.id, n.hint FROM nodes n JOIN (SELECT * FROM discoveredNodes d WHERE d.user_id=:user_id AND d.status= 0) AS t
 		 ON n.id= t.node_id WHERE n.circuit_id=:circuit_id";
      try {
         $stmt = $db->prepare($sql);
@@ -346,8 +346,8 @@ function getUserHints(){
 function getUserQuestions(){
 	global $db, $request;
 		 $question = json_decode($request->getBody());
-		 $sql = "SELECT question.id, question.question from question INNER JOIN nodediscovered ON
-		 question.id=nodediscovered.question_id INNER JOIN node on node.id=nodediscovered.node_id WHERE
+		 $sql = "SELECT question.id, question.question from questions INNER JOIN discoveredNodes ON
+		 question.id=nodediscovered.question_id INNER JOIN nodes on node.id=nodediscovered.node_id WHERE
 		 node.circuit_id=:circuit_id AND nodediscovered.user_id=:user_id AND nodediscovered.status = 1";
      try {
         $stmt = $db->prepare($sql);
@@ -370,7 +370,7 @@ function getUserQuestions(){
 */
 function getNodeQuestions($node_id){
  global $db, $response;
-		$sql = "SELECT * FROM question WHERE node_id=:node_id";
+		$sql = "SELECT * FROM questions WHERE node_id=:node_id";
 		try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("node_id", $node_id);
@@ -394,7 +394,7 @@ function validateResponse() {
  global $db, $request;
 	 //si status = 1 requiere un update antes de hacer el insert
 	 $question = json_decode($request->getBody());
- 	 $sql = "SELECT id FROM question WHERE id=:id AND answer=:answer";
+ 	 $sql = "SELECT id FROM questions WHERE id=:id AND answer=:answer";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $question->question_id);
@@ -420,7 +420,7 @@ function getNodediscoveredId() {
  global $db, $request;
 	 $nodediscovered = json_decode($request->getBody());
  	 $sql = "SELECT nodediscovered.id, nodediscovered.node_id, nodediscovered.statusDate1, nodediscovered.statusDate2
-	  				FROM nodediscovered JOIN node ON nodediscovered.node_id=node.id
+	  				FROM discoveredNodes JOIN nodes ON nodediscovered.node_id=node.id
 	 				WHERE nodediscovered.user_id=:user_id AND nodediscovered.question_id = :question_id AND node.circuit_id=:circuit_id";
 	 try {
 			 $stmt = $db->prepare($sql);
@@ -447,7 +447,7 @@ function getNodediscoveredId() {
 function validateNodeCode() {
  global $db, $request;
 	 $node = json_decode($request->getBody());
- 	 $sql = "SELECT id FROM node WHERE id=:id AND code=:code";
+ 	 $sql = "SELECT id FROM nodes WHERE id=:id AND code=:code";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $node->node_id);
@@ -470,7 +470,7 @@ function validateNodeCode() {
 */
 function getNodeDiscoveredByUserNode($user_id, $node_id){
  global $db, $response;
-	 $sql = "SELECT * FROM nodeDiscovered WHERE user_id=:user_id AND node_id=:node_id";
+	 $sql = "SELECT * FROM discoveredNodes WHERE user_id=:user_id AND node_id=:node_id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("user_id", $user_id);
@@ -493,7 +493,7 @@ function getNodeDiscoveredByUserNode($user_id, $node_id){
 */
 function getPuntuacion($user_id, $circuit_id){
  global $db, $response;
-	 $sql = "SELECT n.name FROM nodediscovered d JOIN node n ON d.node_id=n.id WHERE d.user_id=:user_id AND
+	 $sql = "SELECT n.name FROM discoveredNodes d JOIN nodes n ON d.node_id=n.id WHERE d.user_id=:user_id AND
 	 					n.circuit_id=:circuit_id AND d.status=2";
 	 try {
 			 $stmt = $db->prepare($sql);
@@ -515,7 +515,7 @@ function getPuntuacion($user_id, $circuit_id){
 */
 function getTotalNodes($circuit_id){
  global $db, $response;
-	 $sql = "SELECT COUNT(id) as total FROM node n WHERE n.circuit_id=:circuit_id";
+	 $sql = "SELECT COUNT(id) as total FROM nodes n WHERE n.circuit_id=:circuit_id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("circuit_id", $circuit_id);
@@ -536,8 +536,8 @@ function getTotalNodes($circuit_id){
 */
 function getTotalScore($circuit_id){
  global $db, $response;
-	 $sql = "SELECT COUNT(u.id) AS cantidad, u.email FROM nodediscovered nd JOIN user u ON
-	  nd.user_id=u.id JOIN node n ON nd.node_id=n.id WHERE nd.status=2 AND n.circuit_id= :circuit_id GROUP BY nd.user_id DESC";
+	 $sql = "SELECT COUNT(u.id) AS cantidad, u.email FROM discoveredNodes nd JOIN user u ON
+	  nd.user_id=u.id JOIN nodes n ON nd.node_id=n.id WHERE nd.status=2 AND n.circuit_id= :circuit_id GROUP BY nd.user_id DESC";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("circuit_id", $circuit_id);
@@ -559,7 +559,7 @@ function getTotalScore($circuit_id){
 */
 function getLocationVisited($user_id, $circuit_id){
  global $db, $response;
-	 $sql = "SELECT n.longitude, n.latitude, n.name FROM nodediscovered nd JOIN node n ON nd.node_id=n.id
+	 $sql = "SELECT n.longitude, n.latitude, n.name FROM discoveredNodes nd JOIN nodes n ON nd.node_id=n.id
 	 				 WHERE nd.status=2 AND nd.user_id=:user_id AND n.circuit_id=:circuit_id";
 	 try {
 			 $stmt = $db->prepare($sql);
@@ -583,7 +583,7 @@ function getLocationVisited($user_id, $circuit_id){
 */
 function getNodes(){
 	global $db, $response;
-    $sql = "select * FROM node ORDER BY id";
+    $sql = "select * FROM nodes ORDER BY id";
     try {
         $stmt = $db->query($sql);
         $nodes = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -600,7 +600,7 @@ function getNodes(){
 */
 function getCircuits(){
 	global $db, $response;
-    $sql = "select * FROM circuit ORDER BY id";
+    $sql = "select * FROM circuits ORDER BY id";
     try {
         $stmt = $db->query($sql);
         $circuits = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -616,7 +616,7 @@ function getCircuits(){
 */
 function getUsers(){
 	global $db, $response;
-    $sql = "select * FROM user ORDER BY id";
+    $sql = "select * FROM users ORDER BY id";
     try {
         $stmt = $db->query($sql);
         $users = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -632,7 +632,7 @@ function getUsers(){
 */
 function getQuestions(){
 	global $db, $response;
-    $sql = "select * FROM question ORDER BY id";
+    $sql = "select * FROM questions ORDER BY id";
     try {
         $stmt = $db->query($sql);
         $questions = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -648,7 +648,7 @@ function getQuestions(){
 */
 function getInscriptions(){
 	global $db, $response;
-    $sql = "select * FROM inscription ORDER BY id";
+    $sql = "select * FROM inscriptions ORDER BY id";
     try {
         $stmt = $db->query($sql);
         $inscriptions = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -664,7 +664,7 @@ function getInscriptions(){
 */
 function getNodesDiscovered(){
 	global $db, $response;
-    $sql = "select * FROM nodediscovered ORDER BY id";
+    $sql = "select * FROM discoveredNodes ORDER BY id";
     try {
         $stmt = $db->query($sql);
         $nodesDiscovered = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -684,7 +684,7 @@ function getNodesDiscovered(){
 */
 function getNode($id){
 	global $db;
-     $sql = "SELECT * FROM node WHERE id=:id";
+     $sql = "SELECT * FROM nodes WHERE id=:id";
      try {
 
         $stmt = $db->prepare($sql);
@@ -705,7 +705,7 @@ function getNode($id){
  */
  function getCircuit($id){
  	global $db;
-      $sql = "SELECT * FROM circuit WHERE id=:id";
+      $sql = "SELECT * FROM circuits WHERE id=:id";
       try {
          $stmt = $db->prepare($sql);
          $stmt->bindParam("id", $id);
@@ -724,7 +724,7 @@ function getNode($id){
   */
 	function getUser($id){
 		global $db;
-	     $sql = "SELECT * FROM user WHERE id=:id";
+	     $sql = "SELECT * FROM users WHERE id=:id";
 	     try {
 
 	        $stmt = $db->prepare($sql);
@@ -744,7 +744,7 @@ function getNode($id){
    */
 function getQuestion($id){
 	 	global $db, $response;
-	     $sql = "SELECT * FROM question WHERE id=:id";
+	     $sql = "SELECT * FROM questions WHERE id=:id";
 			 try {
           $stmt = $db->prepare($sql);
           $stmt->bindParam("id", $id);
@@ -763,7 +763,7 @@ function getQuestion($id){
    */
 	 function getInscription($id){
 		global $db, $response;
-			 $sql = "SELECT * FROM inscription WHERE id=:id";
+			 $sql = "SELECT * FROM inscriptions WHERE id=:id";
 			 try {
 					 $stmt = $db->prepare($sql);
 					 $stmt->bindParam("id", $id);
@@ -782,7 +782,7 @@ function getQuestion($id){
 	 */
 	 function getNodeDiscovered($id){
 	  global $db, $response;
-	 		$sql = "SELECT * FROM nodeDiscovered WHERE id=:id";
+	 		$sql = "SELECT * FROM discoveredNodes WHERE id=:id";
 	 		try {
 	 				$stmt = $db->prepare($sql);
 	 				$stmt->bindParam("id", $id);
@@ -808,7 +808,7 @@ function getQuestion($id){
 	  global $db, $request;
 	 	 //si status = 1 requiere un update antes de hacer el insert
 	 	 $node = json_decode($request->getBody());
-	  	 $sql = "INSERT INTO node (name, description, code, latitude, longitude, hint, circuit_id) VALUES (:name, :description, SHA(:name), :latitude, :longitude, :hint, :circuit_id)";
+	  	 $sql = "INSERT INTO nodes (name, description, code, latitude, longitude, hint, circuit_id) VALUES (:name, :description, SHA(:name), :latitude, :longitude, :hint, :circuit_id)";
 	 	 try {
 	 			 $stmt = $db->prepare($sql);
 	 			 $stmt->bindParam("name", $node->name);
@@ -838,7 +838,7 @@ function getQuestion($id){
 	global $db, $request;
     //si status = 1 requiere un update antes de hacer el insert
     $circuit = json_decode($request->getBody());
-	$sql = "INSERT  INTO circuit (name, status, description) VALUES (:name, :status, :description)";
+	$sql = "INSERT  INTO circuits (name, status, description) VALUES (:name, :status, :description)";
     try {
         $stmt = $db->prepare($sql);
         $stmt->bindParam("name", $circuit->name);
@@ -862,7 +862,7 @@ function addUser() {
  global $db, $request;
 	 //si status = 1 requiere un update antes de hacer el insert
 	 $user = json_decode($request->getBody());
- $sql = "INSERT  INTO user (name, lastname, birthDate, email, password, color, gender, type) VALUES (:name, :lastname, :birthDate, :email, MD5(:password),:color, :gender, :type)";
+ $sql = "INSERT  INTO users (name, lastname, birthDate, email, password, color, gender, type) VALUES (:name, :lastname, :birthDate, :email, MD5(:password),:color, :gender, :type)";
 	 try {
 
 			 $stmt = $db->prepare($sql);
@@ -894,7 +894,7 @@ function addQuestion() {
  global $db, $request;
 	 //si status = 1 requiere un update antes de hacer el insert
 	 $question = json_decode($request->getBody());
- 	 $sql = "INSERT INTO question (question, answer, node_id) VALUES (:question, :answer, :node_id)";
+ 	 $sql = "INSERT INTO questions (question, answer, node_id) VALUES (:question, :answer, :node_id)";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("question", $question->question);
@@ -919,7 +919,7 @@ function addInscription() {
 global $db, $request;
 	$body = $request->getBody();
 	$inscription = json_decode($body);
-	$sql = "INSERT INTO inscription (circuit_id, user_id) VALUES (:circuit_id, :user_id)";
+	$sql = "INSERT INTO inscriptions (circuit_id, user_id) VALUES (:circuit_id, :user_id)";
 	try {
 			$stmt = $db->prepare($sql);
 			$stmt->bindParam("circuit_id", $inscription->circuit_id);
@@ -945,7 +945,7 @@ global $db, $request;
 function addNodeDiscovered() {
 global $db, $request;
 	$nodeDiscovered = json_decode($request->getBody());
-	$sql = "INSERT  INTO nodeDiscovered (node_id, user_id, question_id, status, statusDate1) VALUES (:node_id, :user_id, :question_id, :status, :statusDate1)";
+	$sql = "INSERT  INTO discoveredNodes (node_id, user_id, question_id, status, statusDate1) VALUES (:node_id, :user_id, :question_id, :status, :statusDate1)";
 	try {
 			$stmt = $db->prepare($sql);
 			$stmt->bindParam("node_id", $nodeDiscovered->node_id);
@@ -974,7 +974,7 @@ global $db, $request;
 	  global $db, $request;
 		 $body = $request->getBody();
      $node = json_decode($body);
-  	 $sql = "UPDATE node SET name= :name, description= :description, code= :code, latitude= :latitude, longitude= :longitude, hint= :hint, circuit_id= :circuit_id WHERE id= :id";
+  	 $sql = "UPDATE nodes SET name= :name, description= :description, code= :code, latitude= :latitude, longitude= :longitude, hint= :hint, circuit_id= :circuit_id WHERE id= :id";
 	 	 try {
 	 			 $stmt = $db->prepare($sql);
 	 			 $stmt->bindParam("name", $node->name);
@@ -1003,7 +1003,7 @@ function updateCircuit($id) {
     global $db, $request;
     $body = $request->getBody();
     $circuit = json_decode($body);
-    $sql = "UPDATE circuit SET name=:name, status=:status, description=:description WHERE id=:id ";
+    $sql = "UPDATE circuits SET name=:name, status=:status, description=:description WHERE id=:id ";
     try {
         $stmt = $db->prepare($sql);
 				$stmt->bindParam("name", $circuit->name);
@@ -1028,7 +1028,7 @@ function updateUser($id) {
 	 //si status = 1 requiere un update antes de hacer el insert
 	 $body = $request->getBody();
 	 $user = json_decode($body);
- 	 $sql = "UPDATE user set name=:name, lastname=:lastname, birthDate=:birthDate, email=:email, password=:password, color=:color, gender=:gender, type=:type WHERE id=:id";
+ 	 $sql = "UPDATE users set name=:name, lastname=:lastname, birthDate=:birthDate, email=:email, password=:password, color=:color, gender=:gender, type=:type WHERE id=:id";
 	 try {
 
 			 $stmt = $db->prepare($sql);
@@ -1059,7 +1059,7 @@ function updateQuestion($id) {
  global $db, $request;
    $body = $request->getBody();
 	 $question = json_decode($body);
- 	 $sql = "UPDATE question SET question= :question, answer= :answer, node_id= :node_id WHERE id= :id";
+ 	 $sql = "UPDATE questions SET question= :question, answer= :answer, node_id= :node_id WHERE id= :id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("question", $question->question);
@@ -1084,7 +1084,7 @@ function updateInscription($id) {
 global $db, $request;
 	$body = $request->getBody();
 	$inscription = json_decode($body);
-	$sql = "UPDATE inscription SET circuit_id=:circuit_id, user_id=:user_id WHERE id=:id";
+	$sql = "UPDATE inscriptions SET circuit_id=:circuit_id, user_id=:user_id WHERE id=:id";
 	try {
 			$stmt = $db->prepare($sql);
 			$stmt->bindParam("circuit_id", $inscription->circuit_id);
@@ -1111,7 +1111,7 @@ function updateNodeDiscovered($id) {
 global $db, $request;
 	$body = $request->getBody();
 	$nodeDiscovered = json_decode($body);
-$sql = "UPDATE nodeDiscovered SET node_id=:node_id, user_id=:user_id, status=:status, statusDate1=:statusDate1, statusDate2=:statusDate2, statusDate3=:statusDate3 WHERE id=:id";
+$sql = "UPDATE discoveredNodes SET node_id=:node_id, user_id=:user_id, status=:status, statusDate1=:statusDate1, statusDate2=:statusDate2, statusDate3=:statusDate3 WHERE id=:id";
 	try {
 			$stmt = $db->prepare($sql);
 			$stmt->bindParam("node_id", $nodeDiscovered->node_id);
@@ -1142,7 +1142,7 @@ $sql = "UPDATE nodeDiscovered SET node_id=:node_id, user_id=:user_id, status=:st
 */
 function deleteNode($id){
  global $db;
-	 $sql = "DELETE FROM node WHERE id=:id";
+	 $sql = "DELETE FROM nodes WHERE id=:id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $id);
@@ -1160,7 +1160,7 @@ function deleteNode($id){
 */
 function deleteCircuit($id){
  global $db;
-	 $sql = "DELETE FROM circuit WHERE id=:id";
+	 $sql = "DELETE FROM circuits WHERE id=:id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $id);
@@ -1179,7 +1179,7 @@ function deleteCircuit($id){
 */
 function deleteUser($id){
  global $db;
-	 $sql = "DELETE FROM user WHERE id=:id";
+	 $sql = "DELETE FROM users WHERE id=:id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $id);
@@ -1198,7 +1198,7 @@ function deleteUser($id){
 */
 function deleteQuestion($id){
  global $db;
-	 $sql = "DELETE FROM question WHERE id=:id";
+	 $sql = "DELETE FROM questions WHERE id=:id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $id);
@@ -1218,7 +1218,7 @@ function deleteQuestion($id){
 */
 function deleteInscription($id){
  global $db;
-	 $sql = "DELETE FROM inscription WHERE id=:id";
+	 $sql = "DELETE FROM inscriptions WHERE id=:id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $id);
@@ -1236,7 +1236,7 @@ function deleteInscription($id){
 */
 function deleteNodeDiscovered($id){
  global $db;
-	 $sql = "DELETE FROM nodeDiscovered WHERE id=:id";
+	 $sql = "DELETE FROM discoveredNodes WHERE id=:id";
 	 try {
 			 $stmt = $db->prepare($sql);
 			 $stmt->bindParam("id", $id);

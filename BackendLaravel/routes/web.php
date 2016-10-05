@@ -42,14 +42,14 @@ Route::delete('/users/{id}', 'UserController@destroy');
 //API estándar circuit
 Route::get('/circuits', 'CircuitController@index');
 Route::get('/circuits/{id}', 'CircuitController@show');
-Route::post('/circuits', 'CircuitController@create');
+Route::post('/circuits', 'CircuitController@store');
 Route::put('/circuits/{id}', 'CircuitController@update');
 Route::delete('/circuits/{id}', 'CircuitController@destroy');
 
 //API estándar node
 Route::get('/nodes', 'NodeController@index');
 Route::get('/nodes/{id}', 'NodeController@show');
-Route::post('/nodes', 'NodeController@create');
+Route::post('/nodes', 'NodeController@store');
 Route::put('/nodes/{id}', 'NodeController@update');
 Route::delete('/nodes/{id}', 'NodeController@destroy');
 
@@ -63,13 +63,13 @@ Route::delete('/questions/{id}', 'QuestionController@destroy');
 //API estándar inscription
 Route::get('/inscriptions', 'InscriptionController@index');
 Route::get('/inscriptions/{id}', 'InscriptionController@show');
-Route::post('/inscriptions', 'InscriptionController@create');
+Route::post('/inscriptions', 'InscriptionController@store');
 Route::put('/inscriptions/{id}', 'InscriptionController@update');
 Route::delete('/inscriptions/{id}', 'InscriptionController@destroy');
 
 //API estándar discoveredNodes
 Route::get('/discoverednodes', 'DiscoveredNodeController@index');
 Route::get('/discoverednodes/{id}', 'DiscoveredNodeController@show');
-Route::post('/nsapi_response_headersDiscovered', 'DiscoveredNodeController@create');
+Route::post('/nsapi_response_headersDiscovered', 'DiscoveredNodeController@store');
 Route::put('/discoverednodes/{id}', 'DiscoveredNodeController@update');
 Route::delete('/discoverednodes/{id}', 'DiscoveredNodeController@destroy');

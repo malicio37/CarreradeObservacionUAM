@@ -18,12 +18,12 @@ class CircuitController extends Controller
   * @param user_id
   * @return mixed
   */
-  public function getCircuitInscripted(Request $request){
+  public function getCircuitInscripted(Request $data){
     /* "SELECT circuit.id, circuit.name FROM circuit INNER JOIN (SELECT circuit_id FROM inscription
 						 WHERE user_id=:user_id)AS a ON circuit.id=a.circuit_id WHERE circuit.status=1";*/
-
+    $request=json_decode($data->getContent());
     return (DB::table('circuits')->join('inscriptions','circuits.id','=','inscriptions.circuit_id')
-    ->where('inscriptions.user_id','=',$request['user_id'])
+    ->where('inscriptions.user_id','=',$request->user_id)
     ->select('circuits.id','circuits.name')
     ->where('circuits.status','=',1)->get()
     );
@@ -93,12 +93,13 @@ class CircuitController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $data)
     {
+      $request=json_decode($data->getContent());
       $id = DB::table('circuits')->insertGetId([
-      'name' => $request['name'],
-      'status' => $request['status'],
-      'description' => $request['description']
+      'name' => $request->name,
+      'status' => $request->status,
+      'description' => $request->description
       ]);
       return (DB::table('circuits')->where('id', '=', $id)->get());
     }
@@ -112,11 +113,11 @@ class CircuitController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $data, $id)
     {
-
+      $request=json_decode($data->getContent());
       DB::table('circuits')->where('id', $id)->update(
-      ['name' => $request['name'], 'status'=> $request['status'],'description' => $request['description']]);
+      ['name' => $request->name, 'status'=> $request->status,'description' => $request->description]);
     }
 
     /**

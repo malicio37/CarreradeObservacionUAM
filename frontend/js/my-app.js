@@ -6,7 +6,8 @@ var $$ = Dom7;
 var user;
 var email;
 var circuit;
-var backend='http://localhost/C_Obs/backendSlim'
+//var backend='http://localhost:8000'
+var backend='http://localhost/CarreradeObservacionUAM/backendSlim'
 var mainView = myApp.addView('.view-main', {
     dynamicNavbar: true
 });

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-//use App\Http\Requests;
+use App\Http\Requests;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -18,8 +18,9 @@ class UserController extends Controller
   * @param email $email
   * @return mixed
   */
-  public function getLogin(Request $request) {
-    return  (DB::table('users')->select('email')->where('email', '=', $request['email'])->get());
+  public function getLogin(Request $data) {
+    $request=json_decode($data->getContent());
+    return  (DB::table('users')->select('email')->where('email', '=', $request->email)->get());
     //{"email":"jmmejia@autonoma.edu.co"}
   }
 
@@ -30,8 +31,9 @@ class UserController extends Controller
   * @param password $password
   * @return mixed
   */
-   public function getLogin2(Request $request) {
-     return  (DB::table('users')->select('id')->where('email', '=', $request['email'])->where('password','=',sha1($request['password']))->get());
+   public function getLogin2(Request $data) {
+     $request=json_decode($data->getContent());
+     return  (DB::table('users')->select('id')->where('email', '=', $request->email)->where('password','=',sha1($request->password))->get());
    }
 
 
@@ -81,22 +83,23 @@ class UserController extends Controller
        * @param  \Illuminate\Http\Request  $request
        * @return \Illuminate\Http\Response
        */
-      public function store(Request $request)
+      public function store(Request $data)
       {
+        $request=json_decode($data->getContent());
         $id = DB::table('users')->insertGetId(
-          ['name' => $request['name'],
-          'lastname' => $request['lastname'],
-          'birthdate' => $request['birthdate'],
-          'email' => $request['email'],
-          'password' =>bcrypt ($request['password']),
-          'color' => $request['color'],
-          'gender' => $request['gender'],
-          'type' => $request['type'],
+          ['name' => $request->name,
+          'lastname' => $request->lastname,
+          'birthdate' => $request->birthdate,
+          'email' => $request->email,
+          'password' =>sha1($request->password),
+          'color' => $request->color,
+          'gender' => $request->gender,
+          'type' => $request->type,
         ]);
         return (DB::table('users')->where('id', '=', $id)->get());
       }
 
-      //{"name":"nn", "lastname":"nn","birthDate":"1984-01-28","email":"@algo","password":"@password","color":"#5454545","gender":"hombre","type":"user"}
+      //{"name":"nn", "lastname":"nn","birthdate":"1984-01-28","email":"@algo","password":"@password","color":"#5454545","gender":"hombre","type":"user"}
 
       /**
        * Display the specified resource.
@@ -127,11 +130,11 @@ class UserController extends Controller
        * @param  int  $id
        * @return \Illuminate\Http\Response
        */
-      public function update(Request $request, $id)
+      public function update(Request $data, $id)
       {
-
+        $request=json_decode($data->getContent());
         DB::table('users')->where('id', $id)->update(
-        ['name' => $request['name'], 'lastname'=> $request['lastname'],'birthdate' => $request['birthdate'],'email' => $request['email'],'password' => $request['password'],'color' => $request['color'],'gender' => $request['gender'],'type' => $request['type']]);
+        ['name' => $request->name, 'lastname'=> $request->lastname,'birthdate' => $request->birthdate,'email' => $request->email,'password' => $request->password,'color' => $request->color,'gender' => $request->gender,'type' => $request->type]);
       }
 
       /**
