@@ -15,7 +15,7 @@ Route::get('/', function () {
     return "Carrera de observación UAM";
 });
 
-Route::post('/users/email', 'UserController@getLogin');
+Route::post('/users/email', 'UserController@getLogin')->middleware('cors');
 Route::post('/users/passwd', 'UserController@getLogin2');
 Route::post('/inscriptions/user', 'CircuitController@getCircuitInscripted');
 Route::post('/nodes/showhint', 'NodeController@getUserHints');
