@@ -60,6 +60,7 @@ class CircuitController extends Controller
           ->where('discoverednodes.status','=',2)
           ->where('nodes.circuit_id','=',$circuit_id)
           ->groupBy('users.email')
+          ->orderBy('cantidad','desc')
           ->get();
       }
 

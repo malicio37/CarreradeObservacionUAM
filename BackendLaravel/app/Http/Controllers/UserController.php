@@ -33,7 +33,8 @@ class UserController extends Controller
   */
    public function getLogin2(Request $data) {
      $request=json_decode($data->getContent());
-     return  (DB::table('users')->select('id')->where('email', '=', $request->email)->where('password','=',sha1($request->password))->get());
+     $user=  (DB::table('users')->select('id')->where('email', '=', $request->email)->where('password','=',sha1($request->password))->get());
+     return (json_encode($user));
    }
 
 

@@ -18,8 +18,8 @@ class CreateNodesTable extends Migration
             $table->string('name',60);
             $table->string('description')->nullable();
             $table->string('code',60);
-            $table->float('latitude');
-            $table->float('longitude');
+            $table->float('latitude',15,13);
+            $table->float('longitude',15,13);
             $table->string('hint');
             $table->integer('circuit_id')->unsigned();
             $table->foreign('circuit_id')->references('id')->on('circuits');

@@ -68,7 +68,7 @@ myApp.onPageInit('login', function (page) {
         else{
           //devuelve el identificador del usuario logeado, se guarda la variable local user y carga selección carrera
           var arreglo=JSON.parse(data);
-          user = arreglo.id;
+          user = arreglo[0].id;
           mainView.router.loadPage("seleccionCarrera.html");
         }
       });
@@ -112,7 +112,7 @@ myApp.onPageInit('registroUsuario', function (page) {
         }
         else{
           var arreglo=JSON.parse(data);
-          user = arreglo.id;
+          user = arreglo[0].id;
           //cargar la pagina de seleccionCarrera para validar a que carrera quiere ingresar
           mainView.router.loadPage("seleccionCarrera.html");
         }
@@ -175,7 +175,7 @@ myApp.onPageInit('principal2', function (page) {
 
   //se evalua si el usuario tiene por lo menos una pista, si no la tiene se le genera
   var params = '{"user_id":'+ user + ', "circuit_id":' + circuit + '}';
-  $$.get(backend +'/nodesdiscovered/visited/'+user+'/'+circuit, function (data) {
+  $$.get(backend +'/discoverednodes/visited/'+user+'/'+circuit, function (data) {
     var arreglo=JSON.parse(data);
     if(Object.keys(arreglo).length==0){
       genDiscoveredNode();
@@ -190,7 +190,7 @@ myApp.onPageInit('principal2', function (page) {
 function genDiscoveredNode(){
   //se crea un JSON con los datos del usuario y la carrera y luego se obtienen los nodos que le faltan por visitar
   var params = '{"user_id":'+ user + ', "circuit_id":'+circuit+'}';
-  $$.post(backend +'/nodesdiscovered/tovisit',params, function (data) {
+  $$.post(backend +'/discoverednodes/tovisit',params, function (data) {
     var arreglo=JSON.parse(data);
     var longitud= Object.keys(arreglo).length;
     //si no hay más nodos que visitar, ha terminado la carrera
@@ -209,7 +209,7 @@ function genDiscoveredNode(){
         params='{"node_id":'+ arreglo[nodo].id + ', "user_id":'+ user +',"question_id":' + arreglo2[pregunta].id +
                 ', "status": 0, "statusDate1" : "'+ getActualDateTime()
                 +'", "statusDate2" : null, "statusDate3": null}';
-        $$.post(backend +'/nodesdiscovered',params, function (data3) {
+        $$.post(backend +'/discoverednodes',params, function (data3) {
           myApp.alert('Tienes una nueva pista!!');
         });
       });
@@ -289,18 +289,18 @@ myApp.onPageInit('escanear', function (page) {
           }
           else{
             //en caso que el código sea el correcto se consulta el id de nodoDescubierto a actualizar
-            $$.get(backend +'/nodesdiscovered/' + user + '/' + nodo_id,  function (data) {
+            $$.get(backend +'/discoverednodes/' + user + '/' + nodo_id,  function (data) {
               var nodoDescubierto=JSON.parse(data);
-              var nd_id= nodoDescubierto.id;
-              var nd_question_id= nodoDescubierto.question_id;
-              var nd_statusDate1= nodoDescubierto.statusDate1;
+              var nd_id= nodoDescubierto[0].id;
+              var nd_question_id= nodoDescubierto[0].question_id;
+              var nd_statusDate1= nodoDescubierto[0].statusDate1;
               //Se realiza la actualización del nodoDescubierto a estado1 (pendiente por responder)
               var params = '{"node_id":'+ nodo_id + ', "user_id":'+user+', "question_id":' + nd_question_id +', "status":1'
                             +', "statusDate1":"'+nd_statusDate1+'","statusDate2":"'+getActualDateTime()+
                             '","statusDate3":null }';
               //se realiza con el método AJAX ya que Framework7 sólo tiene GET y POST abreviados. Los demás verbos se usan con el método AJAX
               $$.ajax({
-                 url: backend + '/nodesdiscovered/'+nd_id,
+                 url: backend + '/discoverednodes/'+nd_id,
                  type: "PUT",
                  contentType: "application/json",
                  data: params,
@@ -346,17 +346,17 @@ myApp.onPageInit('escanear', function (page) {
               }
               else{
                 //obtener el id del nodo descubierto a actualizar a estado1
-                $$.get(backend +'/nodesdiscovered/' + user + '/' + nodo_id,  function (data) {
+                $$.get(backend +'/discoverednodes/' + user + '/' + nodo_id,  function (data) {
                   var nodoDescubierto=JSON.parse(data);
-                  var nd_id= nodoDescubierto.id;
-                  var nd_question_id= nodoDescubierto.question_id;
-                  var nd_statusDate1= nodoDescubierto.statusDate1;
+                  var nd_id= nodoDescubierto[0].id;
+                  var nd_question_id= nodoDescubierto[0].question_id;
+                  var nd_statusDate1= nodoDescubierto[0].statusDate1;
                   //se realiza la actualización del nodo descubierto
                   var params = '{"node_id":'+ nodo_id + ', "user_id":'+user+', "question_id":' + nd_question_id +', "status":1'
                                 +', "statusDate1":"'+nd_statusDate1+'","statusDate2":"'+getActualDateTime()+
                                 '","statusDate3":null }';
                   $$.ajax({
-                     url: backend + '/nodesdiscovered/'+nd_id,
+                     url: backend + '/discoverednodes/'+nd_id,
                      type: "PUT",
                      contentType: "application/json",
                      data: params,
@@ -393,7 +393,7 @@ myApp.onPageInit('escanear', function (page) {
     var pageContainer = $$(page.container);
     var params = '{"user_id":'+ user + ', "circuit_id":'+circuit+'}';
     var selectObject= pageContainer.find('select[name="preguntas"]');
-    $$.post(backend +'/nodesdiscovered/showquestion',params, function (data) {
+    $$.post(backend +'/discoverednodes/showquestion',params, function (data) {
       var arregloB=JSON.parse(data);
         var test="";
         for(i=0;i < Object.keys(arregloB).length; i++){
@@ -411,7 +411,7 @@ myApp.onPageInit('response', function (page) {
   var pageContainer = $$(page.container);
   var params = '{"user_id":'+ user + ', "circuit_id":'+circuit+'}';
   var selectObject= pageContainer.find('select[name="preguntas"]');
-  $$.post(backend +'/nodesdiscovered/showquestion',params, function (data) {
+  $$.post(backend +'/discoverednodes/showquestion',params, function (data) {
     var arregloB=JSON.parse(data);
       for(i=0;i < Object.keys(arregloB).length; i++){
         var opcion = document.createElement("option");
@@ -451,18 +451,18 @@ myApp.onPageInit('response', function (page) {
             else{
               //si la respuesta es correcta, se consulta el id del nodoDescubierto a actualizar
               var params = '{"user_id":'+ user + ', "circuit_id":'+circuit+', "question_id":' + question + '}';
-              $$.post(backend +'/nodesdiscovered/getid', params, function (data) {
+              $$.post(backend +'/discoverednodes/getid', params, function (data) {
                 var nodoDescubierto=JSON.parse(data);
-                var nd_id= nodoDescubierto.id;
-                var nd_node_id= nodoDescubierto.node_id;
-                var nd_statusDate1= nodoDescubierto.statusDate1;
-                var nd_statusDate2= nodoDescubierto.statusDate2;
+                var nd_id= nodoDescubierto[0].id;
+                var nd_node_id= nodoDescubierto[0].node_id;
+                var nd_statusDate1= nodoDescubierto[0].statusDate1;
+                var nd_statusDate2= nodoDescubierto[0].statusDate2;
                 //se actualiza el nodoDescubierto a estado 2
                 var params = '{"node_id":'+ nd_node_id + ', "user_id":'+user+', "question_id":' + question +', "status":2'
                               +', "statusDate1":"'+nd_statusDate1+'","statusDate2":"'+nd_statusDate2+
                               '","statusDate3":"'+ getActualDateTime() + '"}';
                 $$.ajax({
-                   url: backend + '/nodesdiscovered/'+nd_id,
+                   url: backend + '/discoverednodes/'+nd_id,
                    type: "PUT",
                    contentType: "application/json",
                    data: params,
@@ -518,10 +518,10 @@ myApp.onPageInit('puntuacion', function (page) {
   //consulta la cantidad de nodos totales de la carrera
   $$.get(backend +'/circuits/score/'+circuit, function (data) {
     var arreglo=JSON.parse(data);
-    texto="De un total de "+ arreglo.total + " nodos a visitar has completado ";
+    texto="De un total de "+ arreglo[0].total + " nodos a visitar has completado ";
   });
   //consulta la cantidad de nodos en estado 2 para un usuario específico
-  $$.get(backend +'/nodesdiscovered/score/'+user+'/'+circuit, function (data) {
+  $$.get(backend +'/discoverednodes/score/'+user+'/'+circuit, function (data) {
     var arreglo=JSON.parse(data);
     texto+= Object.keys(arreglo).length + ".</br></br> A continuación los nombres de los nodos que has completado: </br></br>";
     for(i=0;i < Object.keys(arreglo).length; i++){
