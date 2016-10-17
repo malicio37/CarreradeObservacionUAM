@@ -22,13 +22,19 @@ class NodeController extends Controller
   public function getUserHints(Request $data){
     /* "SELECT n.id, n.hint FROM node n JOIN (SELECT * FROM nodediscovered d WHERE d.user_id=:user_id AND d.status= 0) AS t
 		 ON n.id= t.node_id WHERE n.circuit_id=:circuit_id"; */
-     $request=json_decode($data->getContent());
-     return (DB::table('nodes')->join('discoverednodes','nodes.id','=','discoverednodes.node_id')
-            ->where('discoverednodes.user_id','=',$request->user_id)
-            ->where('discoverednodes.status','=',0)
-            ->where('nodes.circuit_id','=',$request->circuit_id)
-            ->select('nodes.id','nodes.hint')->get()
-            );
+     try{
+       $request=json_decode($data->getContent());
+       $response = (DB::table('nodes')->join('discoverednodes','nodes.id','=','discoverednodes.node_id')
+              ->where('discoverednodes.user_id','=',$request->user_id)
+              ->where('discoverednodes.status','=',0)
+              ->where('nodes.circuit_id','=',$request->circuit_id)
+              ->select('nodes.id','nodes.hint')->get()
+              );
+        return response()->json(['data' => $response],200);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
   }
 
 
@@ -40,10 +46,20 @@ class NodeController extends Controller
   * @return mixed
   */
   public function validateNodeCode(Request $data) {
-    return (DB::table('nodes')
-            ->select('id')
-            ->where('id', '=', $request->node_id)
-            ->where('code','=',$request->code)->get());
+    try{
+      $request=json_decode($data->getContent());
+      $response = (DB::table('nodes')
+              ->select('id')
+              ->where('id', '=', $request->node_id)
+              ->where('code','=',$request->code)->get());
+      if(count($response) != 0){
+        return response()->json(['data' => $response],200);
+      }
+      return response()->json(['message' => 'Code incorrect!'], 404);
+    }
+    catch(\Illuminate\Database\QueryException $e){
+      return response()->json(['message' => 'Consult failure'], 500);
+    }
   }
 
   //{"node_id": 2, "code":"0.123456768"}
@@ -58,7 +74,13 @@ class NodeController extends Controller
    */
     public function index()
     {
-      return (DB::table('nodes')->get());
+      try{
+        $response = (DB::table('nodes')->get());
+        return response()->json(['data' => $response],200);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -69,7 +91,16 @@ class NodeController extends Controller
      */
     public function show($id)
     {
-      return (DB::table('nodes')->where('id', '=', $id)->get());
+      try{
+        $response = (DB::table('nodes')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'Node not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -80,17 +111,26 @@ class NodeController extends Controller
      */
     public function store(Request $data)
     {
-      $request=json_decode($data->getContent());
-      $id = DB::table('nodes')->insertGetId([
-      'name' => $request->name,
-      'description' => $request->description,
-      'code' => $request->code,
-      'longitude' => $request->longitude,
-      'latitude' => $request->latitude,
-      'hint' => $request->hint,
-      'circuit_id' => $request->circuit_id
-      ]);
-      return (DB::table('nodes')->where('id', '=', $id)->get());
+      try{
+        $request=json_decode($data->getContent());
+        $id = DB::table('nodes')->insertGetId([
+        'name' => $request->name,
+        'description' => $request->description,
+        'code' => $request->code,
+        'longitude' => $request->longitude,
+        'latitude' => $request->latitude,
+        'hint' => $request->hint,
+        'circuit_id' => $request->circuit_id
+        ]);
+        $response= (DB::table('nodes')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],201);
+        }
+        return response()->json(['message' => 'failure to create Node'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
     //{"question":"nn", "answer":"nn","node_id":2}
 
@@ -104,9 +144,19 @@ class NodeController extends Controller
      */
     public function update(Request $data, $id)
     {
-      $request=json_decode($data->getContent());
-      DB::table('nodes')->where('id', $id)->update(
-      ['name' => $request->name, 'description'=> $request->description,'code' => $request->code,'longitude' => $request->longitude,'latitude' => $request->latitude,'hint' => $request->hint,'circuit_id' => $request->circuit_id]);
+      try{
+        $request=json_decode($data->getContent());
+        DB::table('nodes')->where('id', $id)->update(
+        ['name' => $request->name, 'description'=> $request->description,'code' => $request->code,'longitude' => $request->longitude,'latitude' => $request->latitude,'hint' => $request->hint,'circuit_id' => $request->circuit_id]);
+        $response= (DB::table('nodes')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'Node not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -117,7 +167,16 @@ class NodeController extends Controller
      */
     public function destroy($id)
     {
-      DB::table('nodes')->where('id', '=', $id)->delete();
+      try{
+        $response= (DB::table('nodes')->where('id', '=', $id)->get());
+        DB::table('nodes')->where('id', '=', $id)->delete();
+        if(count($response) != 0){
+          return response()->json(['message' => 'Node deleted'],200);
+        }
+        return response()->json(['message' => 'Node not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
-
 }

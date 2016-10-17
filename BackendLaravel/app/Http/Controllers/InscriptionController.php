@@ -24,7 +24,13 @@ class InscriptionController extends Controller
    */
     public function index()
     {
-      return (DB::table('inscriptions')->get());
+      try{
+        $response = (DB::table('inscriptions')->get());
+        return response()->json(['data' => $response],200);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -35,7 +41,16 @@ class InscriptionController extends Controller
      */
     public function show($id)
     {
-      return (DB::table('inscriptions')->where('id', '=', $id)->get());
+      try{
+        $response = (DB::table('inscriptions')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'Inscription not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -46,13 +61,22 @@ class InscriptionController extends Controller
      */
     public function store(Request $data)
     {
-      $request=json_decode($data->getContent());
-      $id = DB::table('inscriptions')->insertGetId([
-      'circuit_id' => $request->circuit_id,
-      'user_id' => $request->user_id,
-      'inscription_date'=> Carbon::now() -> toDateTimeString()
-      ]);
-      return (DB::table('inscriptions')->where('id', '=', $id)->get());
+      try{
+        $request=json_decode($data->getContent());
+        $id = DB::table('inscriptions')->insertGetId([
+        'circuit_id' => $request->circuit_id,
+        'user_id' => $request->user_id,
+        'inscription_date'=> Carbon::now() -> toDateTimeString()
+        ]);
+        $response = (DB::table('inscriptions')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],201);
+        }
+        return response()->json(['message' => 'failure to create Inscription'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
     //{"question":"nn", "answer":"nn","node_id":2}
 
@@ -66,9 +90,19 @@ class InscriptionController extends Controller
      */
     public function update(Request $data, $id)
     {
-      $request=json_decode($data->getContent());
-      DB::table('inscriptions')->where('id', $id)->update(
-      ['circuit_id' => $request->circuit_id, 'user_id'=> $request->user_id,'inscription_date' => $request->inscription_date]);
+      try{
+        $request=json_decode($data->getContent());
+        DB::table('inscriptions')->where('id', $id)->update(
+        ['circuit_id' => $request->circuit_id, 'user_id'=> $request->user_id,'inscription_date' => $request->inscription_date]);
+        $response= (DB::table('inscriptions')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'Inscription not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -79,7 +113,16 @@ class InscriptionController extends Controller
      */
     public function destroy($id)
     {
-      DB::table('inscriptions')->where('id', '=', $id)->delete();
+      try{
+        $response= (DB::table('inscriptions')->where('id', '=', $id)->get());
+        DB::table('inscriptions')->where('id', '=', $id)->delete();
+        if(count($response) != 0){
+          return response()->json(['message' => 'Inscription deleted'],200);
+        }
+        return response()->json(['message' => 'Inscription not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
-
 }

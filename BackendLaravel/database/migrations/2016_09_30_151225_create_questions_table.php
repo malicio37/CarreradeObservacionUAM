@@ -18,7 +18,7 @@ class CreateQuestionsTable extends Migration
             $table->string('question');
             $table->string('answer');
             $table->integer('node_id')->unsigned();
-            $table->foreign('node_id')->references('id')->on('nodes');
+            $table->foreign('node_id')->references('id')->on('nodes')->onDelete('cascade');
             $table->timestamps();
         });
     }

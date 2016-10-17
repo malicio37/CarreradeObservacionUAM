@@ -19,7 +19,16 @@ class QuestionController extends Controller
   * @return mixed
   */
   public function getNodeQuestions($node_id){
-    return (DB::table('questions')->where('node_id', '=', $node_id)->get());
+    try{
+      $response = (DB::table('questions')->where('node_id', '=', $node_id)->get());
+      if(count($response) != 0){
+        return response()->json(['data' => $response],200);
+      }
+      return response()->json(['message' => 'Node doesn´t have questions'], 404);
+    }
+    catch(\Illuminate\Database\QueryException $e){
+      return response()->json(['message' => 'Consult failure'], 500);
+    }
   }
 
 
@@ -30,11 +39,20 @@ class QuestionController extends Controller
   * @return mixed
   */
   public function validateResponse(Request $data) {
-    $request=json_decode($data->getContent());
-    return (DB::table('questions')
-            ->select('id')
-            ->where('id', '=', $request->question_id)
-            ->where('answer','=',$request->answer)->get());
+    try{
+      $request=json_decode($data->getContent());
+      $response = (DB::table('questions')
+              ->select('id')
+              ->where('id', '=', $request->question_id)
+              ->where('answer','=',$request->answer)->get());
+      if(count($response) != 0){
+        return response()->json(['data' => $response],200);
+      }
+      return response()->json(['message' => 'Answer incorrect'], 404);
+    }
+    catch(\Illuminate\Database\QueryException $e){
+      return response()->json(['message' => 'Consult failure'], 500);
+    }
   }
 
 //{"question_id": 1, "response":"WBEIMAR CANO RESTREPO"}
@@ -48,7 +66,13 @@ class QuestionController extends Controller
    */
     public function index()
     {
-      return (DB::table('questions')->get());
+      try{
+        $response = (DB::table('questions')->get());
+        return response()->json(['data' => $response],200);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -59,7 +83,17 @@ class QuestionController extends Controller
      */
     public function show($id)
     {
-      return (DB::table('questions')->where('id', '=', $id)->get());
+      try{
+        $response =  (DB::table('questions')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'Question not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
+
     }
 
     /**
@@ -70,13 +104,22 @@ class QuestionController extends Controller
      */
     public function store(Request $data)
     {
-      $request=json_decode($data->getContent());
-      $id = DB::table('questions')->insertGetId([
-      'question' => $request->question,
-      'answer' => $request->answer,
-      'node_id' => $request->node_id
-      ]);
-      return (DB::table('questions')->where('id', '=', $id)->get());
+      try{
+        $request=json_decode($data->getContent());
+        $id = DB::table('questions')->insertGetId([
+        'question' => $request->question,
+        'answer' => $request->answer,
+        'node_id' => $request->node_id
+        ]);
+        $response = (DB::table('questions')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],201);
+        }
+        return response()->json(['message' => 'failure to create Question'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
     //{"question":"nn", "answer":"nn","node_id":2}
 
@@ -90,9 +133,19 @@ class QuestionController extends Controller
      */
     public function update(Request $data, $id)
     {
-      $request=json_decode($data->getContent());
-      DB::table('questions')->where('id', $id)->update(
-      ['question' => $request->question, 'answer'=> $request->answer,'node_id' => $request->node_id]);
+      try{
+        $request=json_decode($data->getContent());
+        DB::table('questions')->where('id', $id)->update(
+        ['question' => $request->question, 'answer'=> $request->answer,'node_id' => $request->node_id]);
+        $response= (DB::table('questions')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'Question not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -103,9 +156,16 @@ class QuestionController extends Controller
      */
     public function destroy($id)
     {
-      DB::table('questions')->where('id', '=', $id)->delete();
+      try{
+        $response= (DB::table('questions')->where('id', '=', $id)->get());
+        DB::table('questions')->where('id', '=', $id)->delete();
+        if(count($response) != 0){
+          return response()->json(['message' => 'Question deleted'],200);
+        }
+        return response()->json(['message' => 'Question not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
-
-
-
 }

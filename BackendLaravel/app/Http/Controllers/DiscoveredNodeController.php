@@ -24,12 +24,18 @@ class DiscoveredNodeController extends Controller
 		 node.circuit_id=:circuit_id AND nodediscovered.user_id=:user_id AND nodediscovered.status = 1";
     */
     $request=json_decode($data->getContent());
-    return (DB::table('nodes')->join('discoverednodes','discoverednodes.node_id','=','nodes.id')->join('questions','questions.node_id','=','nodes.id')
-           ->where('nodes.circuit_id','=',$request->circuit_id)
-           ->where('discoverednodes.user_id','=',$request->user_id)
-           ->where('discoverednodes.status','=',1)
-           ->select('questions.id','questions.question')->get()
-           );
+    try{
+      $response= (DB::table('discoverednodes')->join('nodes','discoverednodes.node_id','=','nodes.id')->join('questions','questions.id','=','discoverednodes.question_id')
+             ->where('nodes.circuit_id','=',$request->circuit_id)
+             ->where('discoverednodes.user_id','=',$request->user_id)
+             ->where('discoverednodes.status','=',1)
+             ->select('questions.id','questions.question')->get()
+             );
+       return response()->json(['data' => $response],200);
+     }
+     catch(\Illuminate\Database\QueryException $e){
+       return response()->json(['message' => 'Consult failure'], 500);
+     }
   }
 //{"user_id":1, "circuit_id":1}
 
@@ -44,11 +50,22 @@ class DiscoveredNodeController extends Controller
       "SELECT node.id FROM node WHERE node.id NOT IN (SELECT nodediscovered.node_id FROM nodediscovered
 						WHERE node.circuit_id= :circuit_id AND nodediscovered.user_id=:user_id) AND node.circuit_id=:circuit_id";
       */
-      $sql="SELECT nodes.id FROM nodes WHERE nodes.id NOT IN (SELECT discoverednodes.node_id FROM discoverednodes
-              WHERE nodes.circuit_id = " . $request->circuit_id . " AND discoverednodes.user_id =".
-              $request->user_id . " ) AND nodes.circuit_id =" . $request->circuit_id ;
+      try{
+        $request=json_decode($data->getContent());
+        $sql="SELECT nodes.id FROM nodes WHERE nodes.id NOT IN (SELECT discoverednodes.node_id FROM discoverednodes
+                WHERE nodes.circuit_id = " . $request->circuit_id . " AND discoverednodes.user_id =".
+                $request->user_id . " ) AND nodes.circuit_id =" . $request->circuit_id;
 
-        return DB::select($sql);
+          $response = DB::select($sql);
+          //return $response;
+          if(count($response) != 0){
+            return response()->json(['data' => $response],200);
+          }
+          return response()->json(['message' => 'there are not nodes to visit'], 404);
+        }
+        catch(\Illuminate\Database\QueryException $e){
+          return response()->json(['message' => 'Consult failure'], 500);
+        }
     }
 
     //{"user_id":1, "circuit_id":1}
@@ -64,11 +81,20 @@ class DiscoveredNodeController extends Controller
       /*
       "SELECT n.id FROM node n INNER JOIN nodediscovered d ON n.id=d.node_id WHERE n.circuit_id=:circuit_id AND d.user_id=:user_id";
       */
-      return(DB::table('nodes')->join('discoverednodes','discoverednodes.node_id','=','nodes.id')
-          ->where('nodes.circuit_id','=',$circuit_id)
-          ->where('discoverednodes.user_id','=',$user_id)
-          ->select('nodes.id')->get()
-      );
+      try{
+        $response = (DB::table('nodes')->join('discoverednodes','discoverednodes.node_id','=','nodes.id')
+            ->where('nodes.circuit_id','=',$circuit_id)
+            ->where('discoverednodes.user_id','=',$user_id)
+            ->select('nodes.id')->get()
+        );
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'there are not visited nodes'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
 
@@ -86,16 +112,25 @@ class DiscoveredNodeController extends Controller
 	  				FROM nodediscovered JOIN node ON nodediscovered.node_id=node.id
 	 				WHERE nodediscovered.user_id=:user_id AND nodediscovered.question_id = :question_id AND node.circuit_id=:circuit_id"
       */
-      $request=json_decode($data->getContent());
-      $sql="SELECT discoverednodes.id, discoverednodes.node_id, discoverednodes.statusDate1, discoverednodes.statusDate2
-	  				FROM discoverednodes JOIN nodes ON discoverednodes.node_id=nodes.id
-	 				WHERE discoverednodes.user_id= " . $request->user_id. " AND discoverednodes.question_id = " .
-           $request->question_id .  " AND nodes.circuit_id= " . $request->circuit_id;
+      try{
+        $request=json_decode($data->getContent());
+        $sql="SELECT discoverednodes.id, discoverednodes.node_id, discoverednodes.statusDate1, discoverednodes.statusDate2
+  	  				FROM discoverednodes JOIN nodes ON discoverednodes.node_id=nodes.id
+  	 				WHERE discoverednodes.user_id= " . $request->user_id. " AND discoverednodes.question_id = " .
+             $request->question_id .  " AND nodes.circuit_id= " . $request->circuit_id;
 
-      return DB::select($sql);
+        $response = DB::select($sql);
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'there are not discovered nodes'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
 
     }
-//{"user_id":1, "circuit_id":1, "question_id":1}
+//{"user_id":1, "circuit_id":1, "question_id":27}
 
 
     /**
@@ -106,8 +141,17 @@ class DiscoveredNodeController extends Controller
     */
     public function getNodeDiscoveredByUserNode($user_id, $node_id){
     	 //$sql = "SELECT * FROM discoverednodes WHERE user_id=:user_id AND node_id=:node_id";
-       return (DB::table('discoverednodes')->where('user_id', '=', $user_id)
-              ->where('node_id','=',$node_id)->get());
+       try{
+         $response = (DB::table('discoverednodes')->where('user_id', '=', $user_id)
+                ->where('node_id','=',$node_id)->get());
+          if(count($response) != 0){
+            return response()->json(['data' => $response],200);
+          }
+          return response()->json(['message' => 'there are not discovered nodes'], 404);
+        }
+        catch(\Illuminate\Database\QueryException $e){
+          return response()->json(['message' => 'Consult failure'], 500);
+        }
      }
 
 
@@ -123,12 +167,18 @@ class DiscoveredNodeController extends Controller
     	 $sql = "SELECT n.name FROM nodediscovered d JOIN node n ON d.node_id=n.id WHERE d.user_id=:user_id AND
     	 					n.circuit_id=:circuit_id AND d.status=2";
       */
-      return(DB::table('nodes')->join('discoverednodes','discoverednodes.node_id','=','nodes.id')
-          ->where('nodes.circuit_id','=',$circuit_id)
-          ->where('discoverednodes.user_id','=',$user_id)
-          ->where('discoverednodes.status','=',2)
-          ->select('nodes.name')->get()
-      );
+      try{
+        $response = (DB::table('nodes')->join('discoverednodes','discoverednodes.node_id','=','nodes.id')
+            ->where('nodes.circuit_id','=',$circuit_id)
+            ->where('discoverednodes.user_id','=',$user_id)
+            ->where('discoverednodes.status','=',2)
+            ->select('nodes.name')->get()
+        );
+        return response()->json(['data' => $response],200);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 ////////////////////////////////////////////////////////////////////////////////
 // Standar API
@@ -138,7 +188,13 @@ class DiscoveredNodeController extends Controller
    */
     public function index()
     {
-      return (DB::table('discoverednodes')->get());
+      try{
+        $response = (DB::table('discoverednodes')->get());
+        return response()->json(['data' => $response],200);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -149,7 +205,16 @@ class DiscoveredNodeController extends Controller
      */
     public function show($id)
     {
-      return (DB::table('discoverednodes')->where('id', '=', $id)->get());
+      try{
+        $response = (DB::table('discoverednodes')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'DiscoveredNode not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -160,16 +225,26 @@ class DiscoveredNodeController extends Controller
      */
     public function store(Request $data)
     {
-      $request=json_decode($data->getContent());
-      $id = DB::table('discoverednodes')->insertGetId([
-      'node_id' => $request->node_id,
-      'user_id' => $request->user_id,
-      'status' => $request->status,
-      'statusDate1' => $request->statusDate1,
-      'statusDate2' => $request->statusDate2,
-      'statusDate3' => $request->statusDate3,
-      ]);
-      return (DB::table('discoverednodes')->where('id', '=', $id)->get());
+      try{
+        $request=json_decode($data->getContent());
+        $id = DB::table('discoverednodes')->insertGetId([
+        'node_id' => $request->node_id,
+        'user_id' => $request->user_id,
+        'question_id' => $request->question_id,
+        'status' => $request->status,
+        'statusDate1' => $request->statusDate1,
+        'statusDate2' => $request->statusDate2,
+        'statusDate3' => $request->statusDate3,
+        ]);
+        $response = (DB::table('discoverednodes')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],201);
+        }
+        return response()->json(['message' => 'failure to create DiscoveredNode'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
     //{"question":"nn", "answer":"nn","node_id":2}
 
@@ -183,9 +258,19 @@ class DiscoveredNodeController extends Controller
      */
     public function update(Request $data, $id)
     {
-      $request=json_decode($data->getContent());
-      DB::table('discoverednodes')->where('id', $id)->update(
-      ['node_id' => $request->node_id, 'user_id'=> $request->user_id,'status' => $request->status,'statusDate1' => $request->statusDate1,'statusDate2' => $request->statusDate2,'statusDate3' => $request->statusDate3]);
+      try{
+        $request=json_decode($data->getContent());
+        DB::table('discoverednodes')->where('id', $id)->update(
+        ['node_id' => $request->node_id, 'user_id'=> $request->user_id,'status' => $request->status,'statusDate1' => $request->statusDate1,'statusDate2' => $request->statusDate2,'statusDate3' => $request->statusDate3]);
+        $response = (DB::table('discoverednodes')->where('id', '=', $id)->get());
+        if(count($response) != 0){
+          return response()->json(['data' => $response],200);
+        }
+        return response()->json(['message' => 'DiscoveredNode not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
 
     /**
@@ -196,7 +281,16 @@ class DiscoveredNodeController extends Controller
      */
     public function destroy($id)
     {
-      DB::table('discoverednodes')->where('id', '=', $id)->delete();
+      try{
+        $response = (DB::table('discoverednodes')->where('id', '=', $id)->get());
+        DB::table('discoverednodes')->where('id', '=', $id)->delete();
+        if(count($response) != 0){
+          return response()->json(['message' => 'DiscoveredNode deleted'],200);
+        }
+        return response()->json(['message' => 'DiscoveredNode not found'], 404);
+      }
+      catch(\Illuminate\Database\QueryException $e){
+        return response()->json(['message' => 'Consult failure'], 500);
+      }
     }
-
 }

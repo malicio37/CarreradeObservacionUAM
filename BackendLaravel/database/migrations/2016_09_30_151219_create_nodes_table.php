@@ -22,7 +22,7 @@ class CreateNodesTable extends Migration
             $table->float('longitude',15,13);
             $table->string('hint');
             $table->integer('circuit_id')->unsigned();
-            $table->foreign('circuit_id')->references('id')->on('circuits');
+            $table->foreign('circuit_id')->references('id')->on('circuits')->onDelete('cascade');
             $table->timestamps();
         });
     }
