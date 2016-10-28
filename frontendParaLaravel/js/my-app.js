@@ -397,65 +397,71 @@ myApp.onPageInit('escanear', function (page) {
   function startScan() {
       cordova.plugins.barcodeScanner.scan(
           function (result) {
-            //se carga el id del nodo a econtrar
-            var nodo_id= pageContainer.find('select[name="pistasQR"]').val();
-            //se carga el código QR leído, se realizan validaciones
-            var codigo = result.text;
-            if(nodo_id=="" || codigo==""){
-              myApp.alert('Debe ingresar un código válido');
-            }
-            else{
-              //se consulta si el código leído corresponde al que se debe encontrar
-              var params= '{"node_id":' + nodo_id + ', "code":"' + codigo + '"}';
-              $$.ajax({
-               url: backend + '/nodes/validate',
-               type: "POST",
-               contentType: "application/json",
-               data: params,
-               success: function(data, textStatus ){
-                 var arreglo=JSON.parse(data);
-                 //obtener el id del nodo descubierto a actualizar a estado1
-                 $$.ajax({
-                   url: backend + '/discoverednodes/' + user + '/' + nodo_id,
-                   type: "GET",
-                   contentType: "application/json",
-                   data: params,
-                   success: function(data, textStatus ){
-                     var nodoDescubierto=JSON.parse(data);
-                     var nd_id= nodoDescubierto.data[0].id;
-                     var nd_question_id= nodoDescubierto.data[0].question_id;
-                     var nd_statusDate1= nodoDescubierto.data[0].statusDate1;
-                     //se realiza la actualización del nodo descubierto
-                     var params = '{"node_id":'+ nodo_id + ', "user_id":'+user+', "question_id":' + nd_question_id +', "status":1'
-                                   +', "statusDate1":"'+nd_statusDate1+'","statusDate2":"'+getActualDateTime()+
-                                   '","statusDate3":null }';
-                     $$.ajax({
-                        url: backend + '/discoverednodes/'+nd_id,
-                        type: "PUT",
-                        contentType: "application/json",
-                        data: params,
-                        success: function(data, textStatus ){
-                          data = JSON.parse(data);
-                          myApp.alert('Tienes una nueva pregunta!!');
-                          //lo envìa a la página de ver pista a ver la nueva pista generada
-                          mainView.router.loadPage("principal.html");
-                        },
-                        error: function(xhr, textStatus, errorThrown){
-                          // We have received response and can hide activity indicator
-                          console.log('fallo al actualizar nodo descubierto');
-                        }
-                     });
-                   },
-                   error: function(xhr, textStatus, errorThrown){
-                     console.log('Falló la consulta');
-                   }
-                  });
-               },
-               error: function(xhr, textStatus, errorThrown){
-                 myApp.alert('El código no corresponde a la pista actual ');
-               }
-             });
-            }
+            if(!result.cancelled)
+            {
+                if(result.format == "QR_CODE")
+                {
+                  //se carga el id del nodo a econtrar
+                  var nodo_id= pageContainer.find('select[name="pistasQR"]').val();
+                  //se carga el código QR leído, se realizan validaciones
+                  var codigo = result.text;
+                  if(nodo_id=="" || codigo==""){
+                    myApp.alert('Debe ingresar un código válido');
+                  }
+                  else{
+                    //se consulta si el código leído corresponde al que se debe encontrar
+                    var params= '{"node_id":' + nodo_id + ', "code":"' + codigo + '"}';
+                    $$.ajax({
+                     url: backend + '/nodes/validate',
+                     type: "POST",
+                     contentType: "application/json",
+                     data: params,
+                     success: function(data, textStatus ){
+                       var arreglo=JSON.parse(data);
+                       //obtener el id del nodo descubierto a actualizar a estado1
+                       $$.ajax({
+                         url: backend + '/discoverednodes/' + user + '/' + nodo_id,
+                         type: "GET",
+                         contentType: "application/json",
+                         data: params,
+                         success: function(data, textStatus ){
+                           var nodoDescubierto=JSON.parse(data);
+                           var nd_id= nodoDescubierto.data[0].id;
+                           var nd_question_id= nodoDescubierto.data[0].question_id;
+                           var nd_statusDate1= nodoDescubierto.data[0].statusDate1;
+                           //se realiza la actualización del nodo descubierto
+                           var params = '{"node_id":'+ nodo_id + ', "user_id":'+user+', "question_id":' + nd_question_id +', "status":1'
+                                         +', "statusDate1":"'+nd_statusDate1+'","statusDate2":"'+getActualDateTime()+
+                                         '","statusDate3":null }';
+                           $$.ajax({
+                              url: backend + '/discoverednodes/'+nd_id,
+                              type: "PUT",
+                              contentType: "application/json",
+                              data: params,
+                              success: function(data, textStatus ){
+                                data = JSON.parse(data);
+                                myApp.alert('Tienes una nueva pregunta!!');
+                                //lo envìa a la página de ver pista a ver la nueva pista generada
+                                mainView.router.loadPage("principal.html");
+                              },
+                              error: function(xhr, textStatus, errorThrown){
+                                // We have received response and can hide activity indicator
+                                console.log('fallo al actualizar nodo descubierto');
+                              }
+                           });
+                         },
+                         error: function(xhr, textStatus, errorThrown){
+                           console.log('Falló la consulta');
+                         }
+                        });
+                     },
+                     error: function(xhr, textStatus, errorThrown){
+                       myApp.alert('El código no corresponde a la pista actual ');
+                     }
+                   });
+                  }
+                }
+              }
           },
           function (error) {
               alert("Scanning failed: " + error);

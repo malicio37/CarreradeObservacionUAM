@@ -1,0 +1,79 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-plugin-battery-status": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-camera": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-contacts": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-device-motion": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-device-orientation": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-dialogs": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-file-transfer": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-globalization": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-inappbrowser": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-media": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-media-capture": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-network-information": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-splashscreen": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-statusbar": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-vibration": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "phonegap-plugin-barcodescanner": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        }
+    },
+    "dependent_plugins": {
+        "cordova-plugin-compat": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        },
+        "cordova-plugin-file": {
+            "PACKAGE_NAME": "Carrera.autonoma.edu.co"
+        }
+    }
+}

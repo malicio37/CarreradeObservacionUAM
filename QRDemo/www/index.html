@@ -1,0 +1,58 @@
+<!doctype html>
+
+<!--
+https://www.sitepoint.com/scanning-qr-code-cordova/
+-->
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+  <meta name="description" content="The HTML5 Herald">
+  <meta name="author" content="SitePoint">
+
+  <!-- <link rel="stylesheet" href="css/styles.css?v=1.0"> -->
+</head>
+
+<body>
+
+<div data-role="page" id="home">
+    <div data-role="header">
+        <h1>Home</h1>
+    </div>
+
+    <div data-role="main" class="ui-content">
+        <p>
+            <a target="_blank" href="javascript:scan()" style="text-decoration: none"><button>Scan</button></a>
+            <a target="_blank" href="#display" style="text-decoration: none"><button>Display Scanned Data</button></a>
+        </p>
+    </div>
+</div>
+
+<div data-role="page" id="display">
+    <div data-role="header">
+        <a target="_blank" href="#home" class="ui-btn ui-icon-home ui-btn-icon-left">Home</a>
+        <h1>Display</h1>
+    </div>
+
+    <div data-role="main" class="ui-content">
+        <table data-role="table" data-mode="column" id="allTable" class="ui-responsive table-stroke">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script src="scripts.js"></script> 
+</body>
+</html>
